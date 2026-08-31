@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1023">
+<meta name="description" content="Oddbit Work — 未知の断片に出会い、意外性のあるラインを生成する日課アプリ">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Oddbit Work</title>
+<style>
+  :root{
+    --bg: #1a1023;
+    --bg2: #241730;
+    --bg3: #2c1c3a;
+    --ink: #f3ead8;
+    --ink-dim: #a596ad;
+    --gold: #e8b84b;
+    --gold-soft: #f5d98c;
+    --cyan: #6ff5ff;
+    --magenta: #ff6fc9;
+    --line: rgba(243,234,216,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 15% -10%, rgba(232,184,75,0.14), transparent 50%),
+      radial-gradient(ellipse at 100% 0%, rgba(111,245,255,0.08), transparent 45%),
+      radial-gradient(ellipse at 90% 110%, rgba(255,111,201,0.10), transparent 50%),
+      var(--bg);
+    color:var(--ink);
+    font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
+    min-height:100vh;
+    padding: 40px 20px 60px;
+  }
+  .wrap{max-width:720px; margin:0 auto;}
+  header{margin-bottom:36px; border-bottom:1px solid var(--line); padding-bottom:22px;}
+  .eyebrow{
+    font-family: 'Space Mono', monospace;
+    font-size:11px; letter-spacing:0.18em; color:var(--gold);
+    margin:0 0 10px;
+  }
+  h1{
+    font-size: 34px; font-weight:500; margin:0 0 8px;
+    letter-spacing:0.01em;
+    background: linear-gradient(100deg, var(--gold-soft), var(--gold) 45%, var(--magenta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display:inline-block;
+  }
+  .date{font-size:13px; color:var(--ink-dim); font-family:'Space Mono',monospace;}
+
+  .card{
+    background: linear-gradient(160deg, var(--bg2), var(--bg3));
+    border:1px solid var(--line);
+    border-radius: 4px;
+    padding: 26px 24px;
+    margin-bottom: 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';
+    position:absolute; top:0; left:0; width:3px; height:100%;
+    background: linear-gradient(180deg, var(--gold), transparent);
+  }
+  .tag{
+    font-family:'Space Mono',monospace;
+    font-size:11px; letter-spacing:0.16em; color:var(--gold);
+    display:block; margin-bottom:6px;
+  }
+  .card h2{
+    font-size:18px; font-weight:500; margin:0 0 4px;
+  }
+  .card p.desc{
+    font-size:13px; color:var(--ink-dim); margin:0 0 20px; line-height:1.8;
+    font-family:'Space Mono',monospace;
+  }
+
+  .keyword-display{
+    font-size:26px; margin: 18px 0 22px;
+    line-height:1.5;
+  }
+  .keyword-en{
+    font-size:12px; color:var(--ink-dim); font-family:'Space Mono',monospace;
+    display:block; margin-top:4px;
+  }
+
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  button{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--line);
+    padding:10px 18px;
+    border-radius:2px;
+    cursor:pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    letter-spacing:0.03em;
+  }
+  button:hover{border-color:var(--gold); color:var(--gold-soft);}
+  button.primary{border-color:var(--cyan); color:var(--cyan);}
+  button.primary:hover{border-color:var(--gold); color:var(--gold-soft);}
+  button.mode{padding:7px 14px; font-size:11px;}
+  button.mode.active{background:rgba(232,184,75,0.16); border-color:var(--gold); color:var(--gold-soft);}
+
+  .mode-row{margin-bottom:16px;}
+
+  svg{width:100%; height:auto; display:block; border-radius:3px; background:rgba(0,0,0,0.22);}
+  .src-note{font-size:11px; color:var(--ink-dim); font-family:'Space Mono',monospace; margin-top:10px;}
+
+  .note-area{margin-top:18px;}
+  textarea{
+    width:100%; min-height:64px;
+    background:rgba(0,0,0,0.25);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    padding:10px 12px;
+    border-radius:2px;
+    resize:vertical;
+  }
+  textarea:focus{outline:none; border-color:var(--cyan);}
+  .save-row{display:flex; justify-content:space-between; align-items:center; margin-top:8px;}
+  .save-status{font-size:11px; color:var(--ink-dim); font-family:'Space Mono',monospace;}
+
+  .log{margin-top:8px;}
+  .log-item{
+    font-size:12px; color:var(--ink-dim);
+    font-family:'Space Mono',monospace;
+    padding:8px 0; border-top:1px solid var(--line);
+    display:flex; gap:12px;
+  }
+  .log-item .d{color:var(--gold); flex-shrink:0; width:82px;}
+
+  .add-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:4px;}
+  .add-num{
+    font-family:'Space Mono',monospace; font-size:11px; padding:7px 0; text-align:center;
+    border:1px solid var(--line); border-radius:2px; background:transparent;
+    color:var(--ink-dim); cursor:pointer;
+  }
+  .add-num.selected{background:rgba(232,184,75,0.18); border-color:var(--gold); color:var(--gold-soft);}
+  .add-text-input{
+    width:100%; margin-top:10px;
+    background:rgba(0,0,0,0.25); border:1px solid var(--line); color:var(--ink);
+    font-family:'Space Mono',monospace; font-size:12px; padding:9px 10px; border-radius:2px;
+  }
+  .add-text-input:focus{outline:none; border-color:var(--cyan);}
+  .del-btn{
+    margin-left:auto; font-size:10px; padding:4px 10px; flex-shrink:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">GHOST GRID — WORK</p>
+    <h1>Oddbit Work</h1>
+    <p class="date" id="today"></p>
+  </header>
+
+  <div class="card">
+    <span class="tag">UNKNOWN</span>
+    <h2>未知の断片</h2>
+    <p class="desc">自分では選ばないジャンルを、ランダムに一つ引く。良し悪しの判断なしに、出会うだけでいい。</p>
+    <div class="keyword-display" id="keywordJa">—</div>
+    <div class="btnrow">
+      <button class="primary" id="drawBtn">引き直す</button>
+      <button id="searchBtn">画像を見にいく</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag">GENERATED</span>
+    <h2>生成された気配</h2>
+    <p class="desc">アンバランスなのに調和がとれた、意図しない造形。毎回、二度と同じ形にはならない。</p>
+    <div class="mode-row btnrow">
+      <button class="mode active" id="modeOriginal">オリジナル</button>
+      <button class="mode" id="modeGhost">ゴーストグリッド</button>
+    </div>
+    <div id="ghostAddWrap" style="display:none; margin-bottom:16px;">
+      <button id="toggleAddBtn">＋ 当せん番号を追加</button>
+      <div id="addPanel" class="add-panel" style="display:none; margin-top:14px;">
+        <div class="btnrow" style="margin-bottom:10px;">
+          <button class="mode active" id="addGameLoto7">LOTO7</button>
+          <button class="mode" id="addGameLoto6">LOTO6</button>
+        </div>
+        <div id="addGrid" class="add-grid"></div>
+        <p class="src-note" id="addCount">0/7選択</p>
+        <input type="text" id="addTextInput" class="add-text-input" placeholder="または数字をカンマ区切りで入力 例: 2,9,14,20,25,31,36">
+        <div class="btnrow" style="margin-top:12px;">
+          <button class="primary" id="addSaveBtn">保存</button>
+          <button id="addClearBtn">クリア</button>
+        </div>
+        <p class="save-status" id="addStatus"></p>
+        <div id="customList" class="log" style="margin-top:14px;"></div>
+      </div>
+    </div>
+    <svg id="canvas" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg"></svg>
+    <p class="src-note" id="srcNote"></p>
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="primary" id="regenBtn">生成し直す</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag">FEEDBACK</span>
+    <h2>あなたが感じたこと</h2>
+    <p class="desc">判断せず、今日感じたエネルギーの型を一行だけ残す。</p>
+    <div class="note-area">
+      <textarea id="noteInput" placeholder="例：深海の発光クラゲ、非対称の光の散り方"></textarea>
+      <div class="save-row">
+        <span class="save-status" id="saveStatus"></span>
+        <button id="saveNoteBtn">保存</button>
+      </div>
+    </div>
+    <div class="log" id="logList"></div>
+  </div>
+</div>
+
+<script>
+
+/* localStorage-backed shim, mirrors the window.storage(get/set/list) shape
+   used during development inside Claude, so this app runs standalone. */
+const localStore = {
+  async get(key){
+    const v = localStorage.getItem(key);
+    return v === null ? null : { key, value: v };
+  },
+  async set(key, value){
+    try{ localStorage.setItem(key, value); return { key, value }; }
+    catch(e){ return null; }
+  },
+  async list(prefix){
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
+    return { keys };
+  }
+};
+/* ---------- UNKNOWN ---------- */
+const KEYWORDS = [
+  ["深海の発光生物","bioluminescent deep sea creature"],
+  ["溶岩流の表面","fresh lava flow texture"],
+  ["量子もつれの可視化図","quantum entanglement visualization"],
+  ["部族儀式の仮面","tribal ritual mask"],
+  ["氷河のクレバス","glacier crevasse"],
+  ["神経細胞の顕微鏡写真","neuron microscopy image"],
+  ["渡り鳥の群れ 集団飛行","starling murmuration"],
+  ["ガラスの破断面","fractured glass surface macro"],
+  ["刺繍の裏側","embroidery reverse side texture"],
+  ["珊瑚の骨格構造","coral skeleton structure macro"],
+  ["菌糸ネットワーク","fungal mycelium network"],
+  ["落雷の瞬間","lightning strike photography"],
+  ["砂丘の風紋","sand dune ripple pattern"],
+  ["古代遺跡の廃墟","ancient ruins overgrown"],
+  ["書道の一筆","calligraphy brushstroke ink"],
+  ["プラズマ放電","plasma discharge photography"],
+  ["蝶の鱗粉 顕微鏡","butterfly wing scale microscope"],
+  ["樹氷 霧氷","rime ice frost trees"],
+  ["洞窟の鍾乳石","cave stalactite formation"],
+  ["織物の経糸緯糸","handwoven textile warp weft"],
+  ["火山噴煙の断面","volcanic ash plume photography"],
+  ["蜘蛛の巣 朝露","spiderweb morning dew macro"],
+  ["深宇宙 星雲","deep space nebula"],
+  ["能面の表情","noh mask expression"],
+  ["結晶構造 鉱物","mineral crystal formation macro"],
+  ["竜巻の断面図","tornado structure diagram"],
+  ["古文書の写本装飾","illuminated manuscript decoration"],
+  ["血管網の造影","vascular network imaging"],
+  ["雷雲の断面","storm cloud cross section"],
+  ["陶芸の窯変","kiln transmutation glaze pottery"],
+  ["流氷の割れ目","sea ice fracture pattern"],
+  ["刀剣の刃紋","japanese sword blade pattern hamon"],
+  ["粘菌の成長パターン","slime mold growth pattern"],
+  ["砂漠の蜃気楼","desert mirage photography"],
+  ["古い航海図","antique nautical chart"],
+  ["雪の結晶 顕微鏡","snowflake crystal microscope"],
+  ["割れた陶器の金継ぎ","kintsugi repaired ceramic"],
+  ["川の三角州 航空写真","river delta aerial photograph"],
+  ["樹木の根の広がり","tree root system exposed"],
+  ["羽根の構造 拡大","feather structure macro"],
+  ["古代の壁画","prehistoric cave painting"]
+];
+
+function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+let currentKeyword = null;
+
+function drawKeyword(){
+  currentKeyword = pickRandom(KEYWORDS);
+  document.getElementById('keywordJa').innerHTML =
+    currentKeyword[0] + '<span class="keyword-en">' + currentKeyword[1] + '</span>';
+}
+document.getElementById('drawBtn').addEventListener('click', drawKeyword);
+document.getElementById('searchBtn').addEventListener('click', ()=>{
+  if(!currentKeyword) drawKeyword();
+  const q = encodeURIComponent(currentKeyword[1]);
+  window.open('https://www.google.com/search?q=' + q + '&tbm=isch', '_blank');
+});
+
+/* ---------- GENERATED ---------- */
+const PALETTE = ['#e8b84b','#6ff5ff','#ff6fc9','#f3ead8'];
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
+// -- Original organic mode --
+function genPath(w,h){
+  const points = [];
+  const n = Math.floor(rand(4,7));
+  for(let i=0;i<n;i++) points.push([rand(w*0.05,w*0.95), rand(h*0.1,h*0.9)]);
+  let d = `M ${points[0][0]} ${points[0][1]}`;
+  for(let i=1;i<points.length;i++){
+    const [x0,y0] = points[i-1];
+    const [x1,y1] = points[i];
+    const cx1 = x0 + rand(-80,80), cy1 = y0 + rand(-80,80);
+    const cx2 = x1 + rand(-80,80), cy2 = y1 + rand(-80,80);
+    d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x1} ${y1}`;
+  }
+  return d;
+}
+
+function renderOriginal(){
+  const svg = document.getElementById('canvas');
+  svg.innerHTML = '';
+  const w = 640, h = 400;
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <filter id="traceGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>`;
+  svg.appendChild(defs);
+
+  traceLines = [];
+  const lineCount = Math.floor(rand(3,6));
+  for(let i=0;i<lineCount;i++){
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', genPath(w,h));
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', pickRandom(PALETTE));
+    path.setAttribute('stroke-width', rand(0.8,2.4).toFixed(1));
+    path.setAttribute('stroke-opacity', rand(0.35,0.85).toFixed(2));
+    path.setAttribute('stroke-linecap','round');
+    path.classList.add('trace-line');
+    path.dataset.baseWidth = path.getAttribute('stroke-width');
+    path.dataset.baseOpacity = path.getAttribute('stroke-opacity');
+    svg.appendChild(path);
+
+    const len = path.getTotalLength();
+    const samples = [];
+    const steps = 40;
+    for(let s=0;s<=steps;s++){
+      const pt = path.getPointAtLength(len * s/steps);
+      samples.push([pt.x, pt.y]);
+    }
+    traceLines.push({ el: path, samples });
+  }
+  const nodeCount = Math.floor(rand(5,12));
+  for(let i=0;i<nodeCount;i++){
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', rand(w*0.05,w*0.95));
+    c.setAttribute('cy', rand(h*0.1,h*0.9));
+    c.setAttribute('r', rand(1,4.5).toFixed(1));
+    c.setAttribute('fill', pickRandom(PALETTE));
+    c.setAttribute('fill-opacity', rand(0.3,0.9).toFixed(2));
+    svg.appendChild(c);
+  }
+  document.getElementById('srcNote').textContent = 'カーソルや指でラインをなぞると光ります';
+}
+
+let traceLines = [];
+const TRACE_THRESHOLD = 16;
+
+function svgPointFromEvent(svg, evt){
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  const ctm = svg.getScreenCTM();
+  if(!ctm) return null;
+  const loc = pt.matrixTransform(ctm.inverse());
+  return [loc.x, loc.y];
+}
+
+function handleTraceMove(evt){
+  if(mode !== 'original' || traceLines.length === 0) return;
+  const svg = document.getElementById('canvas');
+  const p = svgPointFromEvent(svg, evt);
+  if(!p) return;
+  for(const line of traceLines){
+    let minDist = Infinity;
+    for(const [sx,sy] of line.samples){
+      const d = Math.hypot(sx-p[0], sy-p[1]);
+      if(d < minDist) minDist = d;
+    }
+    if(minDist < TRACE_THRESHOLD){
+      line.el.setAttribute('stroke-width', (parseFloat(line.el.dataset.baseWidth)+2.4).toFixed(1));
+      line.el.setAttribute('stroke-opacity','1');
+      line.el.setAttribute('filter','url(#traceGlow)');
+    } else {
+      line.el.setAttribute('stroke-width', line.el.dataset.baseWidth);
+      line.el.setAttribute('stroke-opacity', line.el.dataset.baseOpacity);
+      line.el.removeAttribute('filter');
+    }
+  }
+}
+
+function clearTraceGlow(){
+  for(const line of traceLines){
+    line.el.setAttribute('stroke-width', line.el.dataset.baseWidth);
+    line.el.setAttribute('stroke-opacity', line.el.dataset.baseOpacity);
+    line.el.removeAttribute('filter');
+  }
+}
+
+(function setupTraceListeners(){
+  const svg = document.getElementById('canvas');
+  svg.style.touchAction = 'none';
+  svg.addEventListener('pointermove', handleTraceMove);
+  svg.addEventListener('pointerleave', clearTraceGlow);
+})();
+
+// -- Ghost Grid mode: real winning-number lines, geometry matches Ghost Grid's own grid --
+const GRID = { cols:5, cell:78, ox:55, oy:55 };
+function gridXY(n){
+  const idx = n-1;
+  const col = idx % GRID.cols;
+  const row = Math.floor(idx / GRID.cols);
+  return [GRID.ox + col*GRID.cell + GRID.cell/2, GRID.oy + row*GRID.cell + GRID.cell/2];
+}
+// exact same spline Ghost Grid uses to connect a draw's sorted numbers
+function catmullRomPath(points){
+  if(points.length < 2) return '';
+  let d = `M ${points[0][0]} ${points[0][1]} `;
+  for(let i=0;i<points.length-1;i++){
+    const p0 = points[i-1] || points[i];
+    const p1 = points[i];
+    const p2 = points[i+1];
+    const p3 = points[i+2] || p2;
+    const c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+    const c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+    d += `C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2[0]} ${p2[1]} `;
+  }
+  return d;
+}
+
+// actual winning numbers, pulled from the Ghost Grid prediction log
+const DRAWS_LOTO7 = [
+  {no:685, main:[1,5,16,20,21,22,31]},
+  {no:686, main:[1,3,16,18,32,34,35]},
+  {no:687, main:[15,22,23,24,25,29,36]},
+  {no:688, main:[4,21,25,28,30,35,37]},
+  {no:689, main:[4,18,23,24,32,33,35]},
+  {no:690, main:[3,10,14,17,18,20,25]},
+  {no:691, main:[8,10,20,22,23,27,37]}
+];
+const DRAWS_LOTO6 = [
+  {no:2117, main:[4,7,26,27,35,41]},
+  {no:2118, main:[1,5,8,35,36,37]},
+  {no:2119, main:[15,18,20,22,30,38]},
+  {no:2120, main:[3,8,13,14,16,43]},
+  {no:2121, main:[1,3,10,17,25,26]},
+  {no:2122, main:[12,15,18,21,26,32]},
+  {no:2123, main:[1,2,4,25,37,40]},
+  {no:2124, main:[6,20,29,36,37,41]},
+  {no:2125, main:[3,22,25,28,30,43]},
+  {no:2126, main:[18,20,22,35,37,42]},
+  {no:2127, main:[7,12,15,29,30,33]},
+  {no:2128, main:[13,20,22,27,35,38]},
+  {no:2129, main:[2,4,6,16,25,41]},
+  {no:2130, main:[12,18,35,41,42,43]},
+  {no:2131, main:[25,26,28,33,35,43]},
+  {no:2132, main:[9,15,16,19,31,32]}
+];
+
+function rotatePoint([x,y], cx, cy, deg){
+  const rad = deg * Math.PI/180;
+  const dx = x-cx, dy = y-cy;
+  return [cx + dx*Math.cos(rad) - dy*Math.sin(rad), cy + dx*Math.sin(rad) + dy*Math.cos(rad)];
+}
+function reflectPoint([x,y], cx, cy, flipX, flipY){
+  return [flipX ? cx - (x-cx) : x, flipY ? cy - (y-cy) : y];
+}
+function fitToCanvas(points, w, h, pad){
+  const xs = points.map(p=>p[0]), ys = points.map(p=>p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const bw = Math.max(maxX-minX, 1), bh = Math.max(maxY-minY, 1);
+  const scale = Math.min((w-pad*2)/bw, (h-pad*2)/bh);
+  const offX = (w - bw*scale)/2, offY = (h - bh*scale)/2;
+  return points.map(([x,y]) => [ (x-minX)*scale + offX, (y-minY)*scale + offY ]);
+}
+
+function renderGhost(){
+  const svg = document.getElementById('canvas');
+  svg.innerHTML = '';
+  const w = 640, h = 400;
+
+  const overlayTwo = Math.random() < 0.3;
+  const drawCount = overlayTwo ? 2 : 1;
+  const colorsUsed = [];
+  const allPtsForFit = [];
+  const renderedLines = [];
+
+  for(let i=0;i<drawCount;i++){
+    const isLoto7 = Math.random() < 0.5;
+    const pool = isLoto7 ? DRAWS_LOTO7.concat(customDraws.loto7) : DRAWS_LOTO6.concat(customDraws.loto6);
+    const draw = pickRandom(pool);
+    const sorted = [...draw.main].sort((a,b)=>a-b);
+    let pts = sorted.map(gridXY);
+
+    const cx = pts.reduce((s,p)=>s+p[0],0)/pts.length;
+    const cy = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+    const angle = rand(0,360);
+    const flipX = Math.random() < 0.5;
+    const flipY = Math.random() < 0.5;
+
+    pts = pts.map(p => rotatePoint(p, cx, cy, angle));
+    pts = pts.map(p => reflectPoint(p, cx, cy, flipX, flipY));
+
+    const color = pickRandom(PALETTE.filter(c=>!colorsUsed.includes(c))) || pickRandom(PALETTE);
+    colorsUsed.push(color);
+    renderedLines.push({pts, color, draw, isLoto7, angle, flipX, flipY});
+    allPtsForFit.push(...pts);
+  }
+
+  // fit all lines into the canvas together using one shared scale, so overlaid
+  // lines stay proportionally correct relative to each other
+  const xs = allPtsForFit.map(p=>p[0]), ys = allPtsForFit.map(p=>p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const bw = Math.max(maxX-minX, 1), bh = Math.max(maxY-minY, 1);
+  const pad = 44;
+  const scale = Math.min((w-pad*2)/bw, (h-pad*2)/bh);
+  const offX = (w - bw*scale)/2, offY = (h - bh*scale)/2;
+  const fit = ([x,y]) => [ (x-minX)*scale + offX, (y-minY)*scale + offY ];
+
+  const notes = [];
+  for(const line of renderedLines){
+    const fitted = line.pts.map(fit);
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', catmullRomPath(fitted));
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', line.color);
+    path.setAttribute('stroke-width','2');
+    path.setAttribute('stroke-opacity', overlayTwo ? '0.72' : '0.85');
+    path.setAttribute('stroke-linecap','round');
+    svg.appendChild(path);
+
+    fitted.forEach(([x,y])=>{
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',4);
+      c.setAttribute('fill', line.color);
+      c.setAttribute('fill-opacity','0.85');
+      svg.appendChild(c);
+    });
+
+    const gameLabel = line.isLoto7 ? 'LOTO7' : 'LOTO6';
+    const flipLabel = (line.flipX||line.flipY) ? ` / ${line.flipX?'反転X':''}${line.flipX&&line.flipY?' ':''}${line.flipY?'反転Y':''}` : '';
+    notes.push(`${gameLabel}第${line.draw.no}回 回転${Math.round(line.angle)}°${flipLabel}`);
+  }
+  document.getElementById('srcNote').textContent = notes.join('　×　');
+}
+
+let mode = 'original';
+function regenerate(){
+  if(mode === 'original') renderOriginal();
+  else renderGhost();
+}
+document.getElementById('modeOriginal').addEventListener('click', ()=>{
+  mode = 'original';
+  document.getElementById('modeOriginal').classList.add('active');
+  document.getElementById('modeGhost').classList.remove('active');
+  document.getElementById('ghostAddWrap').style.display = 'none';
+  regenerate();
+});
+document.getElementById('modeGhost').addEventListener('click', ()=>{
+  mode = 'ghost';
+  traceLines = [];
+  document.getElementById('modeGhost').classList.add('active');
+  document.getElementById('modeOriginal').classList.remove('active');
+  document.getElementById('ghostAddWrap').style.display = 'block';
+  regenerate();
+});
+document.getElementById('regenBtn').addEventListener('click', regenerate);
+
+/* ---------- Add your own draws (grid tap or text input) ---------- */
+let customDraws = { loto7: [], loto6: [] };
+let addGame = 'loto7';
+let addSelected = [];
+
+function requiredCount(game){ return game === 'loto7' ? 7 : 6; }
+function maxNumberFor(game){ return game === 'loto7' ? 37 : 43; }
+
+function buildAddGrid(){
+  const grid = document.getElementById('addGrid');
+  grid.innerHTML = '';
+  const max = maxNumberFor(addGame);
+  for(let n=1;n<=max;n++){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'add-num' + (addSelected.includes(n) ? ' selected' : '');
+    btn.textContent = n;
+    btn.addEventListener('click', ()=>toggleAddNumber(n));
+    grid.appendChild(btn);
+  }
+  document.getElementById('addCount').textContent = `${addSelected.length}/${requiredCount(addGame)}選択`;
+}
+
+function toggleAddNumber(n){
+  const req = requiredCount(addGame);
+  const idx = addSelected.indexOf(n);
+  if(idx >= 0){
+    addSelected.splice(idx,1);
+  } else {
+    if(addSelected.length >= req){
+      document.getElementById('addStatus').textContent = `${req}個まで選択できます`;
+      return;
+    }
+    addSelected.push(n);
+  }
+  document.getElementById('addTextInput').value = [...addSelected].sort((a,b)=>a-b).join(',');
+  document.getElementById('addStatus').textContent = '';
+  buildAddGrid();
+}
+
+document.getElementById('addGameLoto7').addEventListener('click', ()=>{
+  addGame = 'loto7'; addSelected = [];
+  document.getElementById('addGameLoto7').classList.add('active');
+  document.getElementById('addGameLoto6').classList.remove('active');
+  document.getElementById('addTextInput').value = '';
+  buildAddGrid();
+});
+document.getElementById('addGameLoto6').addEventListener('click', ()=>{
+  addGame = 'loto6'; addSelected = [];
+  document.getElementById('addGameLoto6').classList.add('active');
+  document.getElementById('addGameLoto7').classList.remove('active');
+  document.getElementById('addTextInput').value = '';
+  buildAddGrid();
+});
+document.getElementById('addClearBtn').addEventListener('click', ()=>{
+  addSelected = [];
+  document.getElementById('addTextInput').value = '';
+  document.getElementById('addStatus').textContent = '';
+  buildAddGrid();
+});
+document.getElementById('toggleAddBtn').addEventListener('click', ()=>{
+  const panel = document.getElementById('addPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  if(!showing) buildAddGrid();
+});
+
+async function saveCustomDraw(){
+  const statusEl = document.getElementById('addStatus');
+  const req = requiredCount(addGame);
+  const max = maxNumberFor(addGame);
+  let nums = [...addSelected];
+  if(nums.length === 0){
+    const txt = document.getElementById('addTextInput').value.trim();
+    if(txt) nums = txt.split(/[,、\s]+/).map(s=>parseInt(s,10)).filter(n=>!isNaN(n));
+  }
+  nums = [...new Set(nums)];
+  if(nums.length !== req){ statusEl.textContent = `数字は${req}個必要です(現在${nums.length}個)`; return; }
+  if(nums.some(n=>n<1||n>max)){ statusEl.textContent = `1〜${max}の範囲で入力してください`; return; }
+  nums.sort((a,b)=>a-b);
+
+  const key = 'oddbit-custom-' + addGame;
+  try{
+    let current = [];
+    try{
+      const res = await localStore.get(key, false);
+      if(res && res.value) current = JSON.parse(res.value);
+    }catch(e){ current = []; }
+    current.push({ no: 'custom-' + Date.now(), main: nums });
+    const result = await localStore.set(key, JSON.stringify(current), false);
+    if(result){
+      customDraws[addGame] = current;
+      statusEl.textContent = '保存しました。次の生成から反映されます';
+      addSelected = [];
+      document.getElementById('addTextInput').value = '';
+      buildAddGrid();
+      renderCustomList();
+    } else statusEl.textContent = '保存に失敗しました';
+  }catch(e){ statusEl.textContent = '保存エラー'; }
+}
+document.getElementById('addSaveBtn').addEventListener('click', saveCustomDraw);
+
+async function loadCustomDraws(){
+  for(const game of ['loto7','loto6']){
+    try{
+      const res = await localStore.get('oddbit-custom-' + game, false);
+      customDraws[game] = (res && res.value) ? JSON.parse(res.value) : [];
+    }catch(e){ customDraws[game] = []; }
+  }
+  renderCustomList();
+}
+
+async function deleteCustomDraw(game, no){
+  customDraws[game] = customDraws[game].filter(d=>d.no !== no);
+  try{
+    await localStore.set('oddbit-custom-' + game, JSON.stringify(customDraws[game]), false);
+  }catch(e){}
+  renderCustomList();
+}
+
+function renderCustomList(){
+  const listEl = document.getElementById('customList');
+  listEl.innerHTML = '';
+  const all = [
+    ...customDraws.loto7.map(d=>({...d, game:'loto7', label:'LOTO7'})),
+    ...customDraws.loto6.map(d=>({...d, game:'loto6', label:'LOTO6'}))
+  ];
+  if(all.length === 0){
+    listEl.innerHTML = '<p class="src-note">保存済みの追加データはまだありません</p>';
+    return;
+  }
+  all.reverse().forEach(d=>{
+    const row = document.createElement('div');
+    row.className = 'log-item';
+    const span = document.createElement('span');
+    span.className = 'd';
+    span.textContent = d.label;
+    const nums = document.createElement('span');
+    nums.textContent = d.main.join(', ');
+    const del = document.createElement('button');
+    del.className = 'del-btn';
+    del.textContent = '削除';
+    del.addEventListener('click', ()=>deleteCustomDraw(d.game, d.no));
+    row.appendChild(span); row.appendChild(nums); row.appendChild(del);
+    listEl.appendChild(row);
+  });
+}
+
+/* ---------- header date ---------- */
+document.getElementById('today').textContent = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'});
+
+/* ---------- FEEDBACK / storage ---------- */
+async function loadLog(){
+  const listEl = document.getElementById('logList');
+  let keys = [];
+  try{
+    const res = await localStore.list('ibutsu-note:');
+    keys = (res && res.keys) ? res.keys : [];
+  }catch(e){ keys = []; }
+  keys.sort().reverse();
+  listEl.innerHTML = '';
+  for(const k of keys.slice(0,10)){
+    try{
+      const item = await localStore.get(k, false);
+      if(item && item.value){
+        const dateStr = k.replace('ibutsu-note:','');
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.innerHTML = `<span class="d">${dateStr}</span><span>${item.value}</span>`;
+        listEl.appendChild(div);
+      }
+    }catch(e){}
+  }
+}
+document.getElementById('saveNoteBtn').addEventListener('click', async ()=>{
+  const val = document.getElementById('noteInput').value.trim();
+  const statusEl = document.getElementById('saveStatus');
+  if(!val){ statusEl.textContent = '内容を入力してください'; return; }
+  const dateKey = new Date().toISOString().slice(0,10);
+  try{
+    const result = await localStore.set('ibutsu-note:' + dateKey, val, false);
+    if(result){
+      statusEl.textContent = '保存しました';
+      document.getElementById('noteInput').value = '';
+      loadLog();
+    } else statusEl.textContent = '保存に失敗しました';
+  }catch(e){ statusEl.textContent = '保存エラー'; }
+});
+
+drawKeyword();
+renderOriginal();
+loadLog();
+loadCustomDraws();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
