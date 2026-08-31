@@ -283,7 +283,34 @@ const KEYWORDS = [
   ["川の三角州 航空写真","river delta aerial photograph"],
   ["樹木の根の広がり","tree root system exposed"],
   ["羽根の構造 拡大","feather structure macro"],
-  ["古代の壁画","prehistoric cave painting"]
+  ["古代の壁画","prehistoric cave painting"],
+  ["マチュピチュ","Machu Picchu ruins aerial"],
+  ["アンコールワット","Angkor Wat temple"],
+  ["ペトラ遺跡","Petra rose city facade"],
+  ["ウルル","Uluru Ayers Rock sunset"],
+  ["グレートバリアリーフ","Great Barrier Reef aerial"],
+  ["カッパドキアの奇岩","Cappadocia fairy chimneys"],
+  ["チチェンイツァ","Chichen Itza pyramid"],
+  ["タージマハル","Taj Mahal"],
+  ["メテオラの修道院","Meteora monastery cliff"],
+  ["ハロン湾","Ha Long Bay karst"],
+  ["万里の長城","Great Wall of China ridge"],
+  ["ギザのピラミッド","Giza pyramids"],
+  ["ストーンヘンジ","Stonehenge"],
+  ["イグアスの滝","Iguazu Falls"],
+  ["姫路城","Himeji Castle"],
+  ["火祭りの松明行列","fire festival torch procession"],
+  ["オーロラ","aurora borealis sky"],
+  ["巨大波のサーフィン","big wave surfing"],
+  ["花火の長時間露光","fireworks long exposure photography"],
+  ["舞踊のブレ写真","dance motion blur photography"],
+  ["鍛冶場の火花","blacksmith forging sparks"],
+  ["ガラス吹き成形","glassblowing molten glass"],
+  ["蟻の行列","ant colony trail macro"],
+  ["干潟の潮紋","tidal flat ripple pattern aerial"],
+  ["砂鉄と磁力線の実験","iron filings magnetic field pattern"],
+  ["台風の衛星画像","typhoon satellite image"],
+  ["万華鏡の内部構造","kaleidoscope pattern macro"]
 ];
 
 function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -338,7 +365,7 @@ function renderOriginal(){
   svg.appendChild(defs);
 
   traceLines = [];
-  const lineCount = Math.floor(rand(3,6));
+  const lineCount = Math.floor(rand(1,4));
   for(let i=0;i<lineCount;i++){
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', genPath(w,h));
