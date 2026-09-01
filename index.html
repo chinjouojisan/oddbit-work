@@ -162,11 +162,25 @@
     background: rgba(0,0,0,0.3);
     position:relative;
   }
+  .journey-viewer:fullscreen,
+  .journey-viewer:-webkit-full-screen{
+    aspect-ratio: unset; width:100vw; height:100vh; border-radius:0;
+  }
   .journey-viewer a-scene{ width:100%; height:100%; display:block; }
   .journey-placeholder{
     position:absolute; inset:0;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
+  .journey-back-btn{
+    position:absolute; top:14px; left:14px; z-index:20;
+    background:rgba(20,14,26,0.72);
+    backdrop-filter: blur(4px);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:'Space Mono',monospace; font-size:12px;
+    padding:8px 16px; border-radius:2px; cursor:pointer;
+  }
+  .journey-back-btn:hover{ border-color:var(--gold); color:var(--gold-soft); }
 </style>
 </head>
 <body>
@@ -202,6 +216,8 @@
         <button class="primary" id="journeyEnterBtn">はじめる</button>
         <p class="src-note" style="margin-top:10px;">タップして360度ビューを開始</p>
       </div>
+      <div id="journeySceneWrap"></div>
+      <button id="journeyBackBtn" class="journey-back-btn" style="display:none;">← 戻る</button>
     </div>
     <p class="src-note" id="journeyNote"></p>
   </div>
@@ -658,9 +674,21 @@ function journeyImageUrl(key){
   return JOURNEY_BASE + JOURNEY_SCENES[key].file;
 }
 
+function requestFs(el){
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if(fn) fn.call(el);
+}
+function exitFs(){
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+  if(fn) fn.call(document);
+}
+function isFs(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+}
+
 function startJourneyScene(){
-  const viewer = document.getElementById('journeyViewer');
-  viewer.innerHTML = `
+  const wrap = document.getElementById('journeySceneWrap');
+  wrap.innerHTML = `
     <a-scene embedded vr-mode-ui="enabled: true" loading-screen="dotsColor: #e8b84b; backgroundColor: #1a1023">
       <a-assets>
         <img id="journeySky" crossorigin="anonymous" src="${journeyImageUrl(journeyCurrentScene)}">
@@ -669,8 +697,11 @@ function startJourneyScene(){
       <a-entity camera look-controls="reverseMouseDrag: true" wasd-controls-enabled="false"></a-entity>
     </a-scene>`;
   journeySceneStarted = true;
+  document.getElementById('journeyPlaceholder').style.display = 'none';
+  document.getElementById('journeyBackBtn').style.display = 'block';
   document.getElementById('journeyNote').textContent =
     `${JOURNEY_SCENES[journeyCurrentScene].label} — スマホは向きを変えて見回せます。ゴーグルではVRアイコンから没入表示できます`;
+  requestFs(document.getElementById('journeyViewer'));
 }
 
 function switchJourneyScene(key){
@@ -690,6 +721,26 @@ function switchJourneyScene(key){
 }
 
 document.getElementById('journeyEnterBtn').addEventListener('click', startJourneyScene);
+
+document.getElementById('journeyBackBtn').addEventListener('click', ()=>{
+  if(isFs()){
+    exitFs();
+    return;
+  }
+  document.getElementById('journeySceneWrap').innerHTML = '';
+  document.getElementById('journeyPlaceholder').style.display = 'flex';
+  document.getElementById('journeyBackBtn').style.display = 'none';
+  journeySceneStarted = false;
+  document.getElementById('journeyNote').textContent = `${JOURNEY_SCENES[journeyCurrentScene].label} — 「はじめる」を押すと開きます`;
+});
+
+['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(evt=>{
+  document.addEventListener(evt, ()=>{
+    if(!isFs()){
+      // left fullscreen — keep the scene loaded but drop back to the small embedded view
+    }
+  });
+});
 
 document.querySelectorAll('#journeySceneRow .mode').forEach(btn=>{
   btn.addEventListener('click', ()=>{
