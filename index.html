@@ -9,6 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Oddbit Work</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <style>
   :root{
     --bg: #1a1023;
@@ -154,6 +155,18 @@
   .del-btn{
     margin-left:auto; font-size:10px; padding:4px 10px; flex-shrink:0;
   }
+
+  .journey-viewer{
+    width:100%; aspect-ratio: 16/10;
+    border-radius:3px; overflow:hidden;
+    background: rgba(0,0,0,0.3);
+    position:relative;
+  }
+  .journey-viewer a-scene{ width:100%; height:100%; display:block; }
+  .journey-placeholder{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
 </style>
 </head>
 <body>
@@ -173,6 +186,24 @@
       <button class="primary" id="drawBtn">引き直す</button>
       <button id="searchBtn">画像を見にいく</button>
     </div>
+  </div>
+
+  <div class="card">
+    <span class="tag">JOURNEY</span>
+    <h2>その場に立つ</h2>
+    <p class="desc">360度の景色に包まれる。スマホなら向きを変えて見回せる。ゴーグルなら、その場に立つ感覚で。</p>
+    <div class="mode-row btnrow" id="journeySceneRow">
+      <button class="mode active" data-scene="aurora">オーロラ</button>
+      <button class="mode" data-scene="night-city">街の夜景</button>
+      <button class="mode" data-scene="sunrise">街の朝焼け</button>
+    </div>
+    <div id="journeyViewer" class="journey-viewer">
+      <div id="journeyPlaceholder" class="journey-placeholder">
+        <button class="primary" id="journeyEnterBtn">はじめる</button>
+        <p class="src-note" style="margin-top:10px;">タップして360度ビューを開始</p>
+      </div>
+    </div>
+    <p class="src-note" id="journeyNote"></p>
   </div>
 
   <div class="card">
@@ -613,6 +644,63 @@ document.getElementById('modeGhost').addEventListener('click', ()=>{
   document.getElementById('ghostAddWrap').style.display = 'block';
   regenerate();
 });
+/* ---------- JOURNEY (360 panorama) ---------- */
+const JOURNEY_BASE = 'https://raw.githubusercontent.com/chinjouojisan/giin_photo/main/';
+const JOURNEY_SCENES = {
+  'aurora': { file: 'BBC6313E-ED4E-42AA-BD1A-7AA92A30500A.png', label: 'オーロラ' },
+  'night-city': { file: 'BCA814CF-687D-4AB4-9952-811162A921AE.png', label: '街の夜景' },
+  'sunrise': { file: 'F1DEECB1-5D62-4737-827E-87EC279299AE.png', label: '街の朝焼け' }
+};
+let journeyCurrentScene = 'aurora';
+let journeySceneStarted = false;
+
+function journeyImageUrl(key){
+  return JOURNEY_BASE + JOURNEY_SCENES[key].file;
+}
+
+function startJourneyScene(){
+  const viewer = document.getElementById('journeyViewer');
+  viewer.innerHTML = `
+    <a-scene embedded vr-mode-ui="enabled: true" loading-screen="dotsColor: #e8b84b; backgroundColor: #1a1023">
+      <a-assets>
+        <img id="journeySky" crossorigin="anonymous" src="${journeyImageUrl(journeyCurrentScene)}">
+      </a-assets>
+      <a-sky id="journeySkyEl" src="#journeySky" rotation="0 -90 0"></a-sky>
+      <a-entity camera look-controls="reverseMouseDrag: true" wasd-controls-enabled="false"></a-entity>
+    </a-scene>`;
+  journeySceneStarted = true;
+  document.getElementById('journeyNote').textContent =
+    `${JOURNEY_SCENES[journeyCurrentScene].label} — スマホは向きを変えて見回せます。ゴーグルではVRアイコンから没入表示できます`;
+}
+
+function switchJourneyScene(key){
+  journeyCurrentScene = key;
+  if(!journeySceneStarted){
+    document.getElementById('journeyNote').textContent = '「はじめる」を押すとこのシーンが開きます';
+    return;
+  }
+  const imgEl = document.getElementById('journeySky');
+  const skyEl = document.getElementById('journeySkyEl');
+  if(imgEl && skyEl){
+    imgEl.setAttribute('src', journeyImageUrl(key));
+    skyEl.setAttribute('src', '#journeySky');
+    document.getElementById('journeyNote').textContent =
+      `${JOURNEY_SCENES[key].label} — スマホは向きを変えて見回せます。ゴーグルではVRアイコンから没入表示できます`;
+  }
+}
+
+document.getElementById('journeyEnterBtn').addEventListener('click', startJourneyScene);
+
+document.querySelectorAll('#journeySceneRow .mode').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#journeySceneRow .mode').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    switchJourneyScene(btn.dataset.scene);
+  });
+});
+
+document.getElementById('journeyNote').textContent = 'オーロラ — 「はじめる」を押すと開きます';
+
 document.getElementById('regenBtn').addEventListener('click', regenerate);
 
 /* ---------- Add your own draws (grid tap or text input) ---------- */
