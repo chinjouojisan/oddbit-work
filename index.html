@@ -219,7 +219,7 @@
         <p class="src-note" style="margin-top:10px;">タップして360度ビューを開始</p>
       </div>
       <div id="journeySceneWrap"></div>
-      <button id="journeyBackBtn" class="journey-back-btn" style="display:none;">← 戻る</button>
+      <button id="journeyBackBtn" class="journey-back-btn" style="display:none;">←</button>
     </div>
     <p class="src-note" id="journeyNote"></p>
   </div>
@@ -719,6 +719,7 @@ function switchJourneyScene(key){
     skyEl.setAttribute('src', journeyImageUrl(key));
     document.getElementById('journeyNote').textContent =
       `${JOURNEY_SCENES[key].label} — スマホは向きを変えて見回せます。ゴーグルではVRアイコンから没入表示できます`;
+    maximizeJourney();
   }
 }
 
