@@ -162,9 +162,10 @@
     background: rgba(0,0,0,0.3);
     position:relative;
   }
-  .journey-viewer:fullscreen,
-  .journey-viewer:-webkit-full-screen{
-    aspect-ratio: unset; width:100vw; height:100vh; border-radius:0;
+  .journey-viewer.journey-maximized{
+    position:fixed; inset:0; width:100vw; height:100vh;
+    aspect-ratio:unset; border-radius:0; z-index:999;
+    background: var(--bg);
   }
   .journey-viewer a-scene{ width:100%; height:100%; display:block; }
   .journey-placeholder{
@@ -172,7 +173,7 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
   .journey-back-btn{
-    position:absolute; top:14px; left:14px; z-index:20;
+    position:absolute; top:14px; left:14px; z-index:1000;
     background:rgba(20,14,26,0.72);
     backdrop-filter: blur(4px);
     border:1px solid var(--line);
@@ -674,16 +675,21 @@ function journeyImageUrl(key){
   return JOURNEY_BASE + JOURNEY_SCENES[key].file;
 }
 
-function requestFs(el){
-  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
-  if(fn) fn.call(el);
+function nudgeResize(){
+  // A-Frame sizes its canvas on window 'resize'; our maximize toggle changes
+  // the container size without firing that event, so we trigger it manually.
+  setTimeout(()=>window.dispatchEvent(new Event('resize')), 60);
 }
-function exitFs(){
-  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-  if(fn) fn.call(document);
+
+function maximizeJourney(){
+  document.getElementById('journeyViewer').classList.add('journey-maximized');
+  document.getElementById('journeyBackBtn').style.display = 'block';
+  nudgeResize();
 }
-function isFs(){
-  return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+function restoreJourney(){
+  document.getElementById('journeyViewer').classList.remove('journey-maximized');
+  document.getElementById('journeyBackBtn').style.display = 'none';
+  nudgeResize();
 }
 
 function startJourneyScene(){
@@ -698,10 +704,9 @@ function startJourneyScene(){
     </a-scene>`;
   journeySceneStarted = true;
   document.getElementById('journeyPlaceholder').style.display = 'none';
-  document.getElementById('journeyBackBtn').style.display = 'block';
   document.getElementById('journeyNote').textContent =
     `${JOURNEY_SCENES[journeyCurrentScene].label} — スマホは向きを変えて見回せます。ゴーグルではVRアイコンから没入表示できます`;
-  requestFs(document.getElementById('journeyViewer'));
+  maximizeJourney();
 }
 
 function switchJourneyScene(key){
@@ -722,25 +727,7 @@ function switchJourneyScene(key){
 
 document.getElementById('journeyEnterBtn').addEventListener('click', startJourneyScene);
 
-document.getElementById('journeyBackBtn').addEventListener('click', ()=>{
-  if(isFs()){
-    exitFs();
-    return;
-  }
-  document.getElementById('journeySceneWrap').innerHTML = '';
-  document.getElementById('journeyPlaceholder').style.display = 'flex';
-  document.getElementById('journeyBackBtn').style.display = 'none';
-  journeySceneStarted = false;
-  document.getElementById('journeyNote').textContent = `${JOURNEY_SCENES[journeyCurrentScene].label} — 「はじめる」を押すと開きます`;
-});
-
-['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(evt=>{
-  document.addEventListener(evt, ()=>{
-    if(!isFs()){
-      // left fullscreen — keep the scene loaded but drop back to the small embedded view
-    }
-  });
-});
+document.getElementById('journeyBackBtn').addEventListener('click', restoreJourney);
 
 document.querySelectorAll('#journeySceneRow .mode').forEach(btn=>{
   btn.addEventListener('click', ()=>{

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'oddbit-work-v4';
+const CACHE_NAME = 'oddbit-work-v5';
 const ASSETS = [
   './',
   './index.html',
