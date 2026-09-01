@@ -697,10 +697,7 @@ function startJourneyScene(){
   const wrap = document.getElementById('journeySceneWrap');
   wrap.innerHTML = `
     <a-scene embedded vr-mode-ui="enabled: true" loading-screen="dotsColor: #e8b84b; backgroundColor: #1a1023">
-      <a-assets>
-        <img id="journeySky" crossorigin="anonymous" src="${journeyImageUrl(journeyCurrentScene)}">
-      </a-assets>
-      <a-sky id="journeySkyEl" src="#journeySky" rotation="0 -90 0"></a-sky>
+      <a-sky id="journeySkyEl" src="${journeyImageUrl(journeyCurrentScene)}" rotation="0 -90 0"></a-sky>
       <a-entity camera look-controls="reverseMouseDrag: true" wasd-controls-enabled="false"></a-entity>
     </a-scene>`;
   journeySceneStarted = true;
@@ -717,11 +714,9 @@ function switchJourneyScene(key){
     document.getElementById('journeyNote').textContent = '「はじめる」を押すとこのシーンが開きます';
     return;
   }
-  const imgEl = document.getElementById('journeySky');
   const skyEl = document.getElementById('journeySkyEl');
-  if(imgEl && skyEl){
-    imgEl.setAttribute('src', journeyImageUrl(key));
-    skyEl.setAttribute('src', '#journeySky');
+  if(skyEl){
+    skyEl.setAttribute('src', journeyImageUrl(key));
     document.getElementById('journeyNote').textContent =
       `${JOURNEY_SCENES[key].label} — スマホは向きを変えて見回せます。ゴーグルではVRアイコンから没入表示できます`;
   }
