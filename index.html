@@ -212,6 +212,8 @@
       <button class="mode active" data-scene="aurora">オーロラ</button>
       <button class="mode" data-scene="night-city">街の夜景</button>
       <button class="mode" data-scene="sunrise">街の朝焼け</button>
+      <button class="mode" data-scene="gold-dungeon">黄金ダンジョン</button>
+      <button class="mode" data-scene="treant">トレント</button>
     </div>
     <div id="journeyViewer" class="journey-viewer">
       <div id="journeyPlaceholder" class="journey-placeholder">
@@ -667,7 +669,9 @@ const JOURNEY_BASE = 'https://raw.githubusercontent.com/chinjouojisan/giin_photo
 const JOURNEY_SCENES = {
   'aurora': { file: 'BBC6313E-ED4E-42AA-BD1A-7AA92A30500A.png', label: 'オーロラ' },
   'night-city': { file: 'BCA814CF-687D-4AB4-9952-811162A921AE.png', label: '街の夜景' },
-  'sunrise': { file: 'F1DEECB1-5D62-4737-827E-87EC279299AE.png', label: '街の朝焼け' }
+  'sunrise': { file: 'F1DEECB1-5D62-4737-827E-87EC279299AE.png', label: '街の朝焼け' },
+  'gold-dungeon': { file: '1375F34F-7BC7-4632-82B3-36189474F5C5.png', label: '黄金ダンジョン' },
+  'treant': { file: '28B3CF98-4E3F-475E-B106-6B7D265829A4.png', label: 'トレント' }
 };
 let journeyCurrentScene = 'aurora';
 let journeySceneStarted = false;
